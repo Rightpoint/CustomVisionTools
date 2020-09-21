@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "customvisiontools"
+version = "0.1.0"
+description = ""
+authors = ["Chris Ballinger <cballinger@rightpoint.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+azure-cognitiveservices-vision-customvision = "^3.0.0"
+azure-cognitiveservices-vision-computervision = "^0.6.0"
+imgaug = "^0.4.0"
+tqdm = "^4.48.2"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.6.0"
+rope = "^0.17.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
