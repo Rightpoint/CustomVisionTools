@@ -11,6 +11,22 @@ import imageio
 
 class ImageDataRegion:
     def __init__(self, tag_name, left, top, width, height):
+        """
+        Represents a tagged region of an image.
+
+        Parameters
+        ----------
+        tag_name : string
+            Name for the region
+        left : float
+            Normalized X coordinate of the origin (top-left)
+        top : float
+            Normalized Y coordinate of the origin (top-left)
+        width : float
+            Normalized width of the region
+        height : float
+            Normalized height of the region
+        """
         self.tag_name = tag_name
         self.left = left
         self.top = top
@@ -18,10 +34,17 @@ class ImageDataRegion:
         self.height = height
 
 class ImageData:
-    """
-    Describes an image and data file pair.
-    """
     def __init__(self, data_path, image_path):
+        """
+        Describes an image and data file pair.
+
+        Parameters
+        ----------
+        data_path : string
+            Full path of the data file
+        image_path : [type]
+            Full path of the image file
+        """
         self.data_path = data_path
         self.image_path = image_path
         self.regions = []
