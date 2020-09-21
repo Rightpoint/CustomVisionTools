@@ -17,85 +17,16 @@ import imageio
 
 # Local imports
 from helpers.augmentation import data_to_ia, ia_to_data, ImageData
+from MyAugments import get_augmentation_operations
 
-class Augment:
-    """
-    Defines the augmentation process for an image.
-
-    Parameters
-    ----------
-    name : string
-        Anything you want. Arbitrary string that will be used to identify the operation and name the final image.
-    operation : imgaug.augmenters.Augmenter
-        Any imgaug list augmenter. The operations will be applied to the image.
-        See https://imgaug.readthedocs.io/en/latest/source/overview/meta.html
-    num_repetitions : int, optional
-        The number of times `operation` will be applied, by default 1. Good for
-        when you have a lot of randomness and need multiple passes.
-    """
-    def __init__(self, name, operation, num_repetitions=1):
-        self.name = name
-        self.operation = operation
-        self.num_repetitions = num_repetitions
-
-def make_default_ops():
-    return [
-        Augment("Blur", iaa.Sequential([
-            iaa.GaussianBlur(sigma=(3.0, 5.0)) # Blur images with a sigma of 3.0 to 5.0
-        ]), num_repetitions=3),
-        Augment("AdditiveGaussianNoise", iaa.Sequential([
-            iaa.AdditiveGaussianNoise(scale=0.05*255)
-        ]), num_repetitions=1)
-    ]
-
-def make_rotation_ops(increments):
-    ops = []
-    for increment in increments:
-        suffix = f"{increment}"
-        if increment < 0:
-            suffix = f"Back{-increment}"
-        ops.append(
-            Augment("Rotate" + suffix, iaa.Sequential([
-                iaa.Grayscale(alpha=1.0),
-                iaa.Rotate(increment)
-            ]), num_repetitions=1)
-        )
-    return ops
-
-def make_scale_ops():
-    ops = []
-    ops.append(
-        Augment("Scale", iaa.Sequential([
-            iaa.Grayscale(alpha=1.0),
-            iaa.Affine(
-                scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
-                rotate=(-5, 5)
-            )
-        ]), num_repetitions=5),
-        Augment("Original", iaa.Sequential([
-            iaa.Grayscale(alpha=1.0),
-        ]), num_repetitions=1),
-    )
-    return ops
+"""
+This file is for the boilerplate around image augmentation. To modify the image
+augmentation itself, modify MyAugments.py.
+"""
 
 def main():
     # Configure imgaug
     ia.seed(1)
-
-    #########################################################
-    # Provide a list of steps. Each one specifies a name 
-    # suffix and an image transformation.
-    #########################################################
-
-    ops = [
-        Augment("Scale", iaa.Sequential([
-            iaa.SomeOf((0, 3), [
-                iaa.Sharpen(alpha=(0, 1.0), lightness=(0.75, 1.5)),
-                iaa.Add((-10, 10), per_channel=0.5), # change brightness of images (by -10 to 10 of original value)
-                iaa.AddToHueAndSaturation((-20, 20)), # change hue and saturation
-            ]),
-        ]), num_repetitions=5),
-    ] + make_default_ops() + make_rotation_ops([-15, -10, -5, 5, 10, 15]) + make_scale_ops()
 
     #########################################################
     # Parse arguments
@@ -183,10 +114,10 @@ def main():
             batch.clear()
 
     #########################################################
-    # Apply each operation in ops to each image
+    # Apply each operation in MyAugments.py to each image
     #########################################################
 
-    for op in ops:
+    for op in get_augmentation_operations():
         for i in range (op.num_repetitions):
             # Produce augmentations
             for batches_aug in op.operation.augment_batches(batches, background=multithreaded and not user_requested_preview_only):

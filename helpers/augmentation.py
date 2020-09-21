@@ -9,6 +9,26 @@ from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
 from imgaug import augmenters as iaa
 import imageio
 
+class Augment:
+    """
+    Defines the augmentation process for an image.
+
+    Parameters
+    ----------
+    name : string
+        Anything you want. Arbitrary string that will be used to identify the operation and name the final image.
+    operation : imgaug.augmenters.Augmenter
+        Any imgaug list augmenter. The operations will be applied to the image.
+        See https://imgaug.readthedocs.io/en/latest/source/overview/meta.html for more.
+    num_repetitions : int, optional
+        The number of times `operation` will be applied, by default 1. Good for
+        when you have a lot of randomness and need multiple passes.
+    """
+    def __init__(self, name, operation, num_repetitions=1):
+        self.name = name
+        self.operation = operation
+        self.num_repetitions = num_repetitions
+
 class ImageDataRegion:
     def __init__(self, tag_name, left, top, width, height):
         """

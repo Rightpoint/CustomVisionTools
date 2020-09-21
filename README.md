@@ -56,7 +56,7 @@ Additional flags:
 
 ### Augment
 
-This applies the augmentations specified in `augment.py` to every image in the input directory using [imgaug](https://github.com/aleju/imgaug), and writes the original and the results to the output directory. You can then upload the whole directory using upload.py.
+This applies the augmentations specified in `get_augmentation_operations()` of `MyAugments.py` to every image in the input directory using [imgaug](https://github.com/aleju/imgaug). The original and the augmented images are then written to the output directory. You can upload the resulting directory using `upload.py`.
 
 ```
 poetry run ./augment.py --input_directory ./downloads --output_directory ./augmented
