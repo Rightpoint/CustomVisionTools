@@ -1,6 +1,6 @@
 # CustomVisionTools
 
-MacOS tools for uploading and downloading object detection training data sets and annotations from CustomVision.
+CustomVisionTools is a macOS command line toolset for working with [Custom Vision](https://www.customvision.ai/)'s object recognition training. These tools make it easy to upload or download images and bounding box data, as well as augmenting your images to make your trained models much more robust.
 
 ## Setup
 
@@ -20,23 +20,34 @@ code . # Or whatever you want
 
 ## Usage
 
-Navigate to your CustomVision project's settings for the following values e.g. `https://www.customvision.ai/projects/<project_id>#/settings`
-
-* endpoint
-* training_key
-* project_id
-
 ### Download
+
+This downloads all the images and bounding boxes in the project into a folder. The data will be saved in YOLO Darknet format.
 
 ```
 poetry run ./download.py --endpoint <endpoint> --training_key <training_key> --project_id <project_id> --output_directory ./downloads
 ```
 
+Parameters:
+* `--endpoint`: "Endpoint" from Custom Vision project settings
+* `--training_key`: "Key" from Custom Vision project settings
+* `--project_id`: "Project Id" from Custom Vision project settings
+* `--output-directory`: The directory that you want the data saved into.
+
+
 ### Upload
+
+This uploads a folder to the specified project on Custom Vision. The folder must be in YOLO Darknet format.
 
 ```
 poetry run ./upload.py --endpoint <endpoint> --training_key <training_key> --project_id <project_id> --input_directory ./downloads
 ```
+
+Parameters:
+* `--endpoint`: "Endpoint" from Custom Vision project settings
+* `--training_key`: "Key" from Custom Vision project settings
+* `--project_id`: "Project Id" from Custom Vision project settings
+* `--input-directory`: The directory that you want to upload from.
 
 Additional flags:
 * `--add_superfluous_regions`: Setting this flag adds an extra useless region to 15 images. 
@@ -45,11 +56,15 @@ Additional flags:
 
 ### Augment
 
+This applies the augmentations specified in `augment.py` to every image in the input directory, and writes the original and the results to the output directory. You can then upload the whole directory using upload.py. The input directory must be a YOLO Darknet formatted folder.
+
 ```
 poetry run ./augment.py --input_directory ./downloads --output_directory ./augmented
 ```
 
-This applies the augmentations specified in `augment.py` to every image in the input directory, and writes the original and the result to the output directory. You can then upload the whole directory using upload.py.
+Parameters:
+* `--input-directory`: The directory that you want to augment.
+* `--output-directory`: The directory that you want the data saved into.
 
 Additional flags:
 * `--preview_only` or `-p`: Preview augmentations without writing to any files.
