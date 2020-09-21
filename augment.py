@@ -11,7 +11,6 @@ from pathlib import Path
 import numpy as np
 import imgaug as ia
 from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
-from imgaug import augmenters as iaa
 from imgaug.augmentables.batches import UnnormalizedBatch
 import imageio
 
