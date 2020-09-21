@@ -10,6 +10,7 @@ from pathlib import Path
 # Dependency imports
 import numpy as np
 import imgaug as ia
+from imgaug import augmenters as iaa
 from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
 from imgaug.augmentables.batches import UnnormalizedBatch
 import imageio
@@ -36,17 +37,20 @@ def main():
         help='e.g. "./downloads/"')
     parser.add_argument('--output_directory', '-o', type=str, 
         help='e.g. "./downloads/"')
-    parser.add_argument('--multithreaded', '-m', action='store_true', 
-        help='Process images in multiple threads')
+    parser.add_argument('--single_threaded', '-s', action='store_true', 
+        help='Process images in one thread instead of multithreading')
     parser.add_argument('--preview_only', '-p', action='store_true', 
         help='Show previews instead of writing to disk')
+    parser.add_argument('--skip_originals', action='store_true', 
+        help='Prevent original images from being copied into the destination folder')
 
     args = parser.parse_args()
 
     input_directory = args.input_directory
     output_directory = args.output_directory
     user_requested_preview_only = args.preview_only
-    multithreaded = args.multithreaded
+    single_threaded = args.single_threaded
+    skip_originals = args.skip_originals
 
     #########################################################
     # Process all data files in the input directory, either 
@@ -62,7 +66,7 @@ def main():
     # Copy the YOLO region class names file to the output directory
     if not user_requested_preview_only:
         copyfile(os.path.join(input_directory, "class.names"), os.path.join(output_directory, "class.names"))
-        
+
     augment_files = []
 
     filenames = os.listdir(input_directory)
@@ -78,7 +82,7 @@ def main():
         image_path = os.path.join(input_directory, base_filename + ".jpg")
         augment_files.append(ImageData(data_path, image_path))
 
-        if not user_requested_preview_only:
+        if not skip_originals and not user_requested_preview_only:
             # Copy the original data file to the output directory.
             copyfile(
                 os.path.join(input_directory, base_filename + ".txt"),
@@ -115,10 +119,12 @@ def main():
     # Apply each operation in MyAugments.py to each image
     #########################################################
 
+    should_multithread = not single_threaded and not user_requested_preview_only
+
     for op in get_augmentation_operations():
         for i in range (op.num_repetitions):
             # Produce augmentations
-            for batches_aug in op.operation.augment_batches(batches, background=multithreaded and not user_requested_preview_only):
+            for batches_aug in op.operation.augment_batches(batches, background=should_multithread):
                 if user_requested_preview_only:
                     # Preview output one batch at a time.
                     # Blocks execution until the window is closed.

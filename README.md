@@ -67,8 +67,9 @@ Parameters:
 * `--output-directory`: The directory that you want the data saved into.
 
 Additional flags:
+* `--skip_originals`: Avoid copying input images into the output directory.
 * `--preview_only` or `-p`: Preview augmentations without writing to any files.
-* `--multithreaded` or `-m`: Perform augmentations on multiple threads.
+* `--single_threaded` or `-s`: Perform augmentations on multiple threads.
 
 ## Similar projects:
 - https://kevinsaye.wordpress.com/2020/05/01/uploading-and-downloading-content-from-custom-computer-vision/
