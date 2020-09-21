@@ -100,7 +100,7 @@ def main():
 
     batch = []
     batches = []
-    MAX_BATCH_SIZE = 10 if user_requested_preview_only else 100
+    MAX_BATCH_SIZE = 10 if user_requested_preview_only else 16
 
     for i, item in enumerate(augment_files):
         item.populate_regions_from_yolo_data(class_names)
