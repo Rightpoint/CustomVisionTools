@@ -1,6 +1,6 @@
 # CustomVisionTools
 
-CustomVisionTools is a macOS command line toolset for working with [Custom Vision](https://www.customvision.ai/)'s object recognition training. These tools make it easy to upload or download images and bounding box data, as well as augmenting your images to make your trained models much more robust.
+CustomVisionTools is a macOS command line toolset for working with [Custom Vision](https://www.customvision.ai/)'s object detection training. These tools make it easy to upload or download images and bounding box data, as well as augmenting your images to make your trained models much more robust.
 
 ## Setup
 
