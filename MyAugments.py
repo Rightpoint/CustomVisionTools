@@ -61,7 +61,7 @@ def get_augmentation_operations():
             iaa.SomeOf((1, 3), [ # Pick between 1 and 3 of the following to apply to the image
                 iaa.Sharpen(alpha=(0, 1.0), lightness=(0.75, 1.5)), # Increase sharpness by a random amount
                 iaa.Add((-10, 10), per_channel=0.5), # Randomly adjust brightness of images (by -10 to 10 of original value)
-                iaa.AddToHueAndSaturation((-20, 20)), # Randomly adjust hue and saturation (by -20 to 20 of original value)
+                iaa.AdditiveGaussianNoise(scale=0.2*255), # Add some noise
             ]),
         ]), num_repetitions=5),
     ] + make_default_ops() + make_rotation_ops([-15, -10, -5, 5, 10, 15]) + make_scale_ops()
