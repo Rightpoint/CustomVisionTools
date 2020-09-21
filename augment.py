@@ -14,6 +14,7 @@ from imgaug import augmenters as iaa
 from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
 from imgaug.augmentables.batches import UnnormalizedBatch
 import imageio
+from tqdm import tqdm
 
 # Local imports
 from helpers.augmentation import data_to_ia, ia_to_data, ImageData
@@ -121,7 +122,15 @@ def main():
 
     should_multithread = not single_threaded and not user_requested_preview_only
 
-    for op in get_augmentation_operations():
+    ops = get_augmentation_operations()
+
+    total_ops_per_image = sum([op.num_repetitions for op in ops])
+    input_image_count = sum([len(b.data) for b in batches])
+    generated_image_count = total_ops_per_image * input_image_count
+    print(f"{generated_image_count} new images will be created.")
+    progress_bar = tqdm(total=generated_image_count)
+
+    for op in ops:
         for i in range (op.num_repetitions):
             # Produce augmentations
             for batches_aug in op.operation.augment_batches(batches, background=should_multithread):
@@ -164,6 +173,10 @@ def main():
                             line = f"{class_names.index(region.tag_name)} {region.left + (region.width / 2)} {region.top + (region.height / 2)} {region.width} {region.height}"
                             lines.append(line)
                         data_file.write("\n".join(lines))
+
+                    # Update progress bar
+                    progress_bar.update(1)
+    progress_bar.close()
 
 if __name__ == '__main__': # Need to do this or multithreading fails.
     print("Augmenting images...")
