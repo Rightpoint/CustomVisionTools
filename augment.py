@@ -59,19 +59,18 @@ def main():
     with open(os.path.join(input_directory, "class.names")) as class_file:
         class_names = [line.rstrip() for line in class_file if line.rstrip() != ""]
 
+    # Copy the YOLO region class names file to the output directory
+    if not user_requested_preview_only:
+        copyfile(os.path.join(input_directory, "class.names"), os.path.join(output_directory, "class.names"))
+        
     augment_files = []
 
     filenames = os.listdir(input_directory)
     filenames.sort()
     for filename in filenames:
-        # Work only on YOLO txt files.
-        if not filename.endswith(".txt"):
-            continue
 
-        if filename == "class.names":
-            # Just copy the file over.
-            if not user_requested_preview_only:
-                copyfile(os.path.join(input_directory, filename), os.path.join(output_directory, filename))
+        # Work only on YOLO .txt files.
+        if not filename.endswith(".txt"):
             continue
 
         base_filename = os.path.splitext(filename)[0]
