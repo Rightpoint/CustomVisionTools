@@ -29,25 +29,25 @@ poetry run ./download.py --endpoint <endpoint> --training_key <training_key> --p
 ```
 
 Parameters:
-* `--endpoint`: "Endpoint" from Custom Vision project settings
-* `--training_key`: "Key" from Custom Vision project settings
-* `--project_id`: "Project Id" from Custom Vision project settings
+* `--endpoint`: "Endpoint" from Custom Vision project settings.
+* `--training_key`: "Key" from Custom Vision project settings.
+* `--project_id`: "Project Id" from Custom Vision project settings.
 * `--output-directory`: The directory that you want the data saved into.
 
 
 ### Upload
 
-This uploads a folder to the specified project on Custom Vision. The folder must be in YOLO Darknet format.
+This uploads a folder to the specified project on Custom Vision.
 
 ```
 poetry run ./upload.py --endpoint <endpoint> --training_key <training_key> --project_id <project_id> --input_directory ./downloads
 ```
 
 Parameters:
-* `--endpoint`: "Endpoint" from Custom Vision project settings
-* `--training_key`: "Key" from Custom Vision project settings
-* `--project_id`: "Project Id" from Custom Vision project settings
-* `--input-directory`: The directory that you want to upload from.
+* `--endpoint`: "Endpoint" from Custom Vision project settings.
+* `--training_key`: "Key" from Custom Vision project settings.
+* `--project_id`: "Project Id" from Custom Vision project settings.
+* `--input-directory`: The directory that you want to upload from. The folder must be in YOLO Darknet format.
 
 Additional flags:
 * `--add_superfluous_regions`: Setting this flag adds an extra useless region to 15 images. 
@@ -56,14 +56,14 @@ Additional flags:
 
 ### Augment
 
-This applies the augmentations specified in `augment.py` to every image in the input directory, and writes the original and the results to the output directory. You can then upload the whole directory using upload.py. The input directory must be a YOLO Darknet formatted folder.
+This applies the augmentations specified in `augment.py` to every image in the input directory using [imgaug](https://github.com/aleju/imgaug), and writes the original and the results to the output directory. You can then upload the whole directory using upload.py.
 
 ```
 poetry run ./augment.py --input_directory ./downloads --output_directory ./augmented
 ```
 
 Parameters:
-* `--input-directory`: The directory that you want to augment.
+* `--input-directory`: The directory that you want to augment. This must be a YOLO Darknet-formatted folder.
 * `--output-directory`: The directory that you want the data saved into.
 
 Additional flags:
