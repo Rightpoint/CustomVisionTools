@@ -30,8 +30,7 @@ def make_rotation_ops(increments):
     return ops
 
 def make_scale_ops():
-    ops = []
-    ops.append(
+    return [
         Augment("Scale", iaa.Sequential([
             iaa.Grayscale(alpha=1.0),
             iaa.Affine(
@@ -42,8 +41,7 @@ def make_scale_ops():
         Augment("Original", iaa.Sequential([
             iaa.Grayscale(alpha=1.0),
         ]), num_repetitions=1),
-    )
-    return ops
+    ]
 
 #########################################################
 # Provide a list of steps. Each one specifies a name 
