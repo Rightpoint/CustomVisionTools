@@ -64,8 +64,10 @@ def main():
     with open(os.path.join(input_directory, "class.names")) as class_file:
         class_names = [line.rstrip() for line in class_file if line.rstrip() != ""]
 
-    # Copy the YOLO region class names file to the output directory
     if not user_requested_preview_only:
+        # Copy MyAugments.py to the output directory
+        copyfile(os.path.join(os.getcwd(), "MyAugments.py"), os.path.join(output_directory, "MyAugments.py"))
+        # Copy the YOLO region class names file to the output directory
         copyfile(os.path.join(input_directory, "class.names"), os.path.join(output_directory, "class.names"))
 
     augment_files = []
