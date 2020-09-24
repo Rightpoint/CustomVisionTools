@@ -17,13 +17,18 @@ import imageio
 from tqdm import tqdm
 
 # Local imports
-from helpers.augmentation import data_to_ia, ia_to_data, ImageData
+from helpers.augmentation import ImageData
 from MyAugments import get_augmentation_operations
 
 """
 This file is for the boilerplate around image augmentation. To modify the image
 augmentation itself, modify MyAugments.py.
 """
+
+class DataPair:
+    def __init__(self, data_path, image_path):
+        self.data_path = data_path
+        self.image_path = image_path
 
 def main():
     # Configure imgaug
@@ -83,7 +88,7 @@ def main():
         base_filename = os.path.splitext(filename)[0]
         data_path = os.path.join(input_directory, base_filename + ".txt")
         image_path = os.path.join(input_directory, base_filename + ".jpg")
-        augment_files.append(ImageData(data_path, image_path))
+        augment_files.append(DataPair(data_path, image_path))
 
         if not skip_originals and not user_requested_preview_only:
             # Copy the original data file to the output directory.
@@ -105,10 +110,12 @@ def main():
     MAX_BATCH_SIZE = 10 if user_requested_preview_only else 16
 
     for i, item in enumerate(augment_files):
-        item.populate_regions_from_yolo_data(class_names)
-
-        # Load the image and bounding boxes into memory
-        image, bbs = data_to_ia(item)
+        # Load image into memory
+        image = imageio.imread(item.image_path)
+        # Get imgaug representation of bounding boxes
+        image_data = ImageData.from_yolo_data(item.data_path, class_names)
+        bbs = image_data.to_imgaug(image.shape)
+        
         batch.append((image, bbs, item))
         
         # If we're at the max batch size or the end of the file list,
@@ -165,16 +172,9 @@ def main():
                     imageio.imwrite(output_image_path, image)
 
                     # Write modified imgaug bounding boxes as YOLO format in output folder
-                    output_data_path = os.path.join(output_directory, f"{base_filename}.txt")
-                    output_data = ia_to_data(output_data_path, output_image_path, image, bbs)
-
-                    with open(output_data_path, "w+") as data_file:
-                        lines = []
-                        for region in output_data.regions:
-                            # Construct YOLO line (format is "<object-class> <x-center> <y-center> <width> <height>", all numbers normalized between 0 and 1)
-                            line = f"{class_names.index(region.tag_name)} {region.left + (region.width / 2)} {region.top + (region.height / 2)} {region.width} {region.height}"
-                            lines.append(line)
-                        data_file.write("\n".join(lines))
+                    image_height, image_width, _ = image.shape
+                    output_data = ImageData.from_imagaug(image_width, image_height, bbs)
+                    output_data.write_yolo(data.data_path, class_names)
 
                     # Update progress bar
                     progress_bar.update(1)

@@ -53,33 +53,59 @@ class ImageDataRegion:
         self.width = width
         self.height = height
 
+    @staticmethod
+    def from_imgaug(bb, image_width, image_height):
+        # Convert from imgaug bounding box to ImageDataRegion
+        return ImageDataRegion(
+            bb.label,
+            float(bb.x1_int) / image_width,
+            float(bb.y1_int) / image_height,
+            float(bb.x2_int - bb.x1_int) / image_width,
+            float(bb.y2_int - bb.y1_int) / image_height)
+    
+    def to_imgaug(self, image_width, image_height):
+        return BoundingBox(
+            x1=self.left * image_width,
+            y1=self.top * image_height,
+            x2=(self.left + self.width) * image_width,
+            y2=(self.top + self.height) * image_height,
+            label=self.tag_name)
+
 class ImageData:
-    def __init__(self, data_path, image_path):
+    def __init__(self):
         """
         Describes an image and data file pair.
-
-        Parameters
-        ----------
-        data_path : string
-            Full path of the data file
-        image_path : [type]
-            Full path of the image file
         """
-        self.data_path = data_path
-        self.image_path = image_path
         self.regions = []
     
     def add_region(self, tag_name, left, top, width, height):
         self.regions.append(ImageDataRegion(tag_name, left, top, width, height))
 
-    def populate_regions_from_yolo_data(self, class_names):
+    @staticmethod
+    def from_yolo_data(data_path, class_names):
         """
-        # Populate ImageDataRegions from data file using known YOLO format
-        # (format is "<object-class> <x-center> <y-center> <width> <height>", all numbers normalized between 0 and 1)
+        Populate ImageDataRegions from data file using known YOLO format.
+        
+        Format is `<object-class> <x-center> <y-center> <width> <height>`, 
+        with all numbers normalized between 0 and 1.
+
+        Parameters
+        ----------
+        data_path : string
+            Path to YOLO data file.
+        class_names : [type]
+            List of region class names.
+
+        Returns
+        -------
+        ImageData
+            ImageData populated from YOLO data.
         """
+        data = ImageData()
+
         # Construct regions
         data_lines = []
-        with open(self.data_path) as data_file:
+        with open(data_path) as data_file:
             data_lines = [line.rstrip() for line in data_file if line.rstrip() != ""]
 
         for line in data_lines:
@@ -87,44 +113,66 @@ class ImageData:
             tag_index = int(elements[0])
             tag_name = class_names[tag_index]
             center_x, center_y, width, height = [float(x) for x in elements[1:]]
-            self.add_region(tag_name, center_x - (width / 2), center_y - (height / 2), width, height)
+            data.add_region(tag_name, center_x - (width / 2), center_y - (height / 2), width, height)
 
-def data_to_ia(data):
-    """
-    Convert from ImageData format to what imgaug expects.
-    """
-    # Load the image
-    image = imageio.imread(data.image_path)
-    image_height, image_width, _ = image.shape
-    # print(image.shape)
+        return data
 
-    # Create ia bounding boxes from json
-    regions = []
-    for region in data.regions:
-        bb = BoundingBox(
-            x1=region.left * image_width,
-            y1=region.top * image_height,
-            x2=(region.left + region.width) * image_width,
-            y2=(region.top + region.height) * image_height,
-            label=region.tag_name)
-        regions.append(bb)
-    bbs = BoundingBoxesOnImage(regions, shape=image.shape)
+    def to_imgaug(self, image_shape):
+        """
+        Get imgaug.BoundingBoxesOnImage from ImageDataRegions.
+        """
+        image_height, image_width, _ = image_shape
 
-    return (image, bbs)
+        # Create ia bounding boxes from json
+        regions = []
+        for region in self.regions:
+            regions.append(region.to_imgaug(image_width, image_height))
+        bbs = BoundingBoxesOnImage(regions, shape=image_shape)
 
-def ia_to_data(data_path, image_path, image, bbs):
-    """
-    Convert from what imgaug produces to a json file in our custom format.
-    """
-    image_height, image_width, _ = image.shape
+        return bbs
 
-    data = ImageData(data_path, image_path)
-    for bb in bbs:
-        data.add_region(
-            bb.label,
-            float(bb.x1_int) / image_width,
-            float(bb.y1_int) / image_height,
-            float(bb.x2_int - bb.x1_int) / image_width,
-            float(bb.y2_int - bb.y1_int) / image_height)
+    @staticmethod
+    def from_imagaug(image_width, image_height, imgaug_bounding_boxes):
+        """
+        Create from imgaug data.
 
-    return data
+        Parameters
+        ----------
+        image_width : int
+            Width of image in pixels.
+        image_height: int
+            Height of image in pixels.
+        imgaug_bounding_boxes : [imgaug.BoundingBox]
+            List of bounding boxes in imgaug format.
+
+        Returns
+        -------
+        ImageData
+            ImageData populated from imgaug data.
+        """
+
+        data = ImageData()
+        for bb in imgaug_bounding_boxes:
+            # Convert from imgaug bounding boxes to ImageDataRegion
+            data.regions.append(ImageDataRegion.from_imgaug(bb, image_width, image_height))
+
+        return data
+
+    def write_yolo(self, data_path, class_names):
+        """
+        Write image data as YOLO formatted data file.
+
+        Parameters
+        ----------
+        data_path : string
+            Path for new data file.
+        class_names : [string]
+            Region class name list.
+        """
+        with open(data_path, "w+") as data_file:
+            lines = []
+            for region in self.regions:
+                # Construct YOLO line (format is "<object-class> <x-center> <y-center> <width> <height>", all numbers normalized between 0 and 1)
+                line = f"{class_names.index(region.tag_name)} {region.left + (region.width / 2)} {region.top + (region.height / 2)} {region.width} {region.height}"
+                lines.append(line)
+            data_file.write("\n".join(lines))
