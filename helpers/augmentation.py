@@ -74,7 +74,7 @@ class ImageDataRegion:
 class ImageData:
     def __init__(self):
         """
-        Describes an image and data file pair.
+        Holds framework-independent data about an image's tagged regions.
         """
         self.regions = []
     
